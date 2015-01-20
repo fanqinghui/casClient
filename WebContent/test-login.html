@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>客户端页面定制化-测试页面</title>
+<script type="text/javascript">
+/**
+ * 页面元素属性赋值
+ */
+function prepareLoginForm() {
+	$('myLoginForm').action = casLoginURL;
+	$("lt").value = loginTicket;
+}
+/**
+ * 检查loginTicket
+ */
+function checkForLoginTicket() {
+	var loginTicketProvided = false;
+	var query	= '';
+	var param	= new Array();
+	var temp	= new Array();	
+	
+   casLoginURL = 'http://cas.server.com:8080/cas/login';//cas认证URL
+   thisPageURL = 'http://cas.server.com:8089/client2/test-login.html';//子系统登陆页
+   casLoginURL += '?login-at=' + encodeURIComponent (thisPageURL);
+   
+	query	= window.location.search;//获取当前URL的?号开始的字符串
+	query	= query.substr (1);
+	param	= query.split ('&');
+	i = 0;
+    // 开始获取当前 url 的参数，获到 lt 和 error_message。
+	while (param[i]) {
+		temp= param[i].split ('=');
+		if (temp[0] == 'lt') {
+			loginTicket = temp[1];
+			loginTicketProvided = true;
+		}
+		if (temp[0] == 'error_message') {
+        	    error = temp[1];
+        	}
+		i++;
+	}
+    // 判断是否已经获取到 lt 参数，如果未获取到则跳转至 cas/login 页，并且带上请求参数  get-lt=true。
+	if (!loginTicketProvided) {// 第一次进该页面时会进行一次跳转
+		location.href = casLoginURL+'&get-lt=true'+ '&service=' + encodeURIComponent ("http://cas.server.com:8089/client2/index.jsp");//这个地址是子系统的URL地址主页，用于验证通过后，跳转到子系统
+	}
+}
+
+/**
+ * 仿jquery页面元素获取
+ */
+var $ = function(id){
+	return document.getElementById(id);
+}
+
+checkForLoginTicket();
+onload = prepareLoginForm;
+</script>
+</head>
+<body>
+	<h2>客户端页面定制化</h2>
+	<form id="myLoginForm" action="" method="post">
+		<table>
+			<tr>
+    			<td id="txt_error" colspan="2">
+				    <!--错误信息页面展示 -->
+					<script type="text/javascript" language="javascript">
+					<!--
+					if ( error ) {
+						error = decodeURIComponent (error);	
+						document.write (error);
+					}
+					//-->
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<td>用户名:</td>
+				<td><input type="text" value="xxxx@sohu-inc.com" name="username" ></td>
+			</tr>
+				<td>密  码:</td>
+				<td><input type="password" value="xxxx" name="password" ></td>
+			</tr>
+			<tr>
+				<td align="right" colspan="2"><input type="submit"/></td>
+			</tr>
+	</table>
+	<!-- Login Ticket-->
+	<input type="hidden" name="lt" id="lt" value="">
+	<!--其中value代表：这个地址是子系统的URL地址主页，用于验证通过后，跳转到子系统-->
+	<!-- <input type="hidden" name="service" value="http://localhost:8088/client1/index.jsp"> -->
+	<input type="hidden" name="_eventId" value="submit" />
+	</form>
+</body>
+</html>
